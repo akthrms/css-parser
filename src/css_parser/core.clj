@@ -80,13 +80,13 @@
   [re]
   (sat (fn [v] (not (nil? (re-find re (str v)))))))
 
-(def digit
-  "recognizes any digit"
-  (from-re #"[0-9]"))
-
 (def letter
   "recognizes any letter"
   (from-re #"[a-zA-Z]"))
+
+(def digit
+  "recognizes any digit"
+  (from-re #"[0-9]"))
 
 ;; ------------------------------
 ;; 4. Combinators
