@@ -5,12 +5,18 @@
 ;; 1. Parser abstraction
 ;; ------------------------------
 
-(defn any [input]
+; type Parser a = String -> [(a, String)]
+
+(defn any
+  "takes any input and 'consume' first char from it"
+  [input]
   (if-let [c (first input)]
     (list [c (.substring input 1)])
     '()))
 
-(defn failure [_]
+(defn failure
+  "this one doesn't accept any input"
+  [_]
   '())
 
 (defn parse [parser input]
@@ -26,10 +32,14 @@
 ;; 2. Monads
 ;; ------------------------------
 
-(defn return [v]
+(defn return
+  "builds parser that always returns given element without consuming (changing) input"
+  [v]
   (fn [input] (list [v input])))
 
-(defn >>= [m f]
+(defn >>=
+  "takes parser and function that builds new parsers from (each) result of applying first one"
+  [m f]
   (fn [input]
     (->> input
          (parse m)
@@ -52,31 +62,47 @@
 (defn sat [pred]
   (>>= any (fn [v] (if (pred v) (return v) failure))))
 
-(defn char-cmp [f]
+(defn char-cmp
+  "just a helper"
+  [f]
   (fn [c] (sat (partial f (first c)))))
 
-(def match (char-cmp =))
+(def match
+  "recognizes given char"
+  (char-cmp =))
 
-(def none-of (char-cmp not=))
+(def none-of
+  "rejects given char"
+  (char-cmp not=))
 
-(defn from-re [re]
+(defn from-re
+  "just a helper"
+  [re]
   (sat (fn [v] (not (nil? (re-find re (str v)))))))
 
-(def digit (from-re #"[0-9]"))
+(def digit
+  "recognizes any digit"
+  (from-re #"[0-9]"))
 
-(def letter (from-re #"[a-zA-Z]"))
+(def letter
+  "recognizes any letter"
+  (from-re #"[a-zA-Z]"))
 
 ;; ------------------------------
 ;; 4. Combinators
 ;; ------------------------------
 
-(defn and-then [p1 p2]
+(defn and-then
+  "(ab)"
+  [p1 p2]
   (do*
     (r1 <- p1)
     (r2 <- p2)
     (return (str r1 r2))))
 
-(defn or-else [p1 p2]
+(defn or-else
+  "(a|b)"
+  [p1 p2]
   (fn [input]
     (lazy-cat (parse p1 input) (parse p2 input))))
 
@@ -84,28 +110,44 @@
 
 (declare optional)
 
-(defn many [parser]
+(defn many
+  "(a*)"
+  [parser]
   (optional (plus parser)))
 
-(defn plus [parser]
+(defn plus
+  "(a+) equals to (aa*)"
+  [parser]
   (do*
     (a <- parser)
     (as <- (many parser))
     (return (cons a as))))
 
-(defn optional [parser]
+(defn optional
+  "(a?)"
+  [parser]
   (or-else parser (return "")))
 
-(def space (or-else (match " ") (match "\n")))
+(def space
+  "recognizes space (or newline)"
+  (or-else (match " ") (match "\n")))
 
-(def spaces (many space))
+(def spaces
+  "recognizes empty string or arbitrary number of spaces"
+  (many space))
 
-(defn string [s]
+(defn string
+  "recognizes given string, i.e. 'clojure'"
+  [s]
   (reduce and-then (map #(match (str %)) s)))
 
 ;; ------------------------------
 ;; 5. CSS
 ;; ------------------------------
+
+; type Selector = String
+; data Rule = Rule String String deriving Show
+; data Ruleset = Ruleset Selector [Rule] deriving Show
 
 (defrecord Rule [key value])
 

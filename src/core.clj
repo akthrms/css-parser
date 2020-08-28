@@ -1,5 +1,8 @@
 (ns core
-  (:require [css-parser.core :refer [parse-all ruleset]]))
+  (:require [css-parser.core :as parser]))
+
+(defn parse-css [input]
+  (parser/parse-all parser/ruleset input))
 
 (defn -main []
-  (parse-all ruleset (slurp "sample.css")))
+  (println (parse-css (slurp "sample.css"))))
