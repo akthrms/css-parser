@@ -28,6 +28,9 @@
 (deftest digit
   (is (= '([\1 "00"]) (parser/parse parser/digit "100"))))
 
+(deftest space
+  (is (= '([\space "clojure"]) (parser/parse parser/space " clojure"))))
+
 (deftest combinators
   (let [clojure-version (parser/do*
                           (parser/string "clojure")
@@ -37,6 +40,10 @@
                           (minor <- parser/digit)
                           (parser/return (str "major: " major "; minor: " minor)))]
     (is (= "major: 1; minor: 7" (parser/parse-all clojure-version "clojure 1.7")))))
+
+(deftest letter-or-hyphen
+  (is (= '([\c "lojure"]) (parser/parse parser/letter-or-hyphen "clojure")))
+  (is (= '([\- "clojure"]) (parser/parse parser/letter-or-hyphen "-clojure"))))
 
 (deftest css
   (is (= #css_parser.core.Rule{:key "background", :value "#fafafa"}

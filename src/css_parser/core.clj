@@ -153,7 +153,7 @@
 
 (defrecord Ruleset [selector rules])
 
-(def letter+ (or-else letter (match "-")))
+(def letter-or-hyphen (or-else letter (match "-")))
 
 (def rule
   (do*
